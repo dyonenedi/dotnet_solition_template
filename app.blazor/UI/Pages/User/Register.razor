@@ -1,0 +1,72 @@
+﻿@page "/user/register"
+@layout app.blazor.UI.Shared.Layout.OfflineLayout
+
+<MudPaper Class="pa-4 mx-auto mt-12" MaxWidth="400px">
+    <MudText Typo="Typo.h5">Cadastro</MudText>
+    
+    <EditForm Model="model" OnValidSubmit="Submit">
+        <DataAnnotationsValidator />
+        
+        <MudTextField T="string"
+            Label="Nome Completo" 
+            @bind-Value="model.FullName" 
+            For="@(() => model.FullName)"
+            InputType="InputType.Text"
+            Margin="Margin.Dense"
+            Immediate="true"
+            AutoFocus="true"
+        />            
+                    
+        <MudTextField T="string" 
+            Label="Usuário" 
+            @bind-Value="model.Username" 
+            For="@(() => model.Username)"
+            Immediate="true"
+            />
+                    
+        <MudTextField T="string" 
+            Label="Email" 
+            @bind-Value="model.Email" 
+            For="@(() => model.Email)"
+            InputType="InputType.Email"
+            Immediate="true"
+            />
+                    
+        <MudTextField T="string" 
+            Label="Senha" 
+            @bind-Value="model.Password" 
+            For="@(() => model.Password)"
+            InputType="InputType.Password"
+            Immediate="true"
+            />
+                    
+        <MudTextField T="string" 
+            Label="Confirmar Senha" 
+            @bind-Value="model.ConfirmPassword" 
+            For="@(() => model.ConfirmPassword)"
+            InputType="InputType.Password"
+            Immediate="true"
+            />
+
+        <MudButton ButtonType="ButtonType.Submit"
+            Disabled="@(isLoading)" 
+            Variant="Variant.Filled" 
+            Color="Color.Primary" 
+            FullWidth="true" Class="mt-4"
+        >
+            @if (isLoading) {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <span class="ml-2">Cadastrando...</span>
+            } else {
+                <span>Cadastrar</span>
+            }
+        </MudButton>
+    </EditForm>
+    
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <MudAlert Severity="messageType" Class="mt-4">
+            @message
+        </MudAlert>
+    }
+</MudPaper>

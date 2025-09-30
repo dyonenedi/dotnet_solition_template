@@ -1,0 +1,49 @@
+﻿@page "/"
+@page "/user/login"
+@layout app.blazor.UI.Shared.Layout.OfflineLayout
+
+<MudPaper Class="pa-4 mx-auto mt-12" MaxWidth="400px">
+    <MudText Typo="Typo.h5">Login</MudText>
+    
+    <EditForm Model="model" OnValidSubmit="Submit">
+        <DataAnnotationsValidator />
+                    
+        <MudTextField T="string" 
+            Label="Email" 
+            @bind-Value="model.Email" 
+            For="@(() => model.Email)"
+            InputType="InputType.Email"
+            Immediate="true"
+            AutoFocus="true"
+            />
+                    
+        <MudTextField T="string" 
+            Label="Senha" 
+            @bind-Value="model.Password" 
+            For="@(() => model.Password)"
+            InputType="InputType.Password"
+            Immediate="true"
+            />
+
+        <MudButton ButtonType="ButtonType.Submit"
+            Disabled="@(isLoading)" 
+            Variant="Variant.Filled" 
+            Color="Color.Primary" 
+            FullWidth="true" Class="mt-4"
+        >
+            @if (isLoading) {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <span class="ml-2">Cadastrando...</span>
+            } else {
+                <span>Cadastrar</span>
+            }
+        </MudButton>
+    </EditForm>
+    
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <MudAlert Severity="messageType" Class="mt-4">
+            @message
+        </MudAlert>
+    }
+</MudPaper>

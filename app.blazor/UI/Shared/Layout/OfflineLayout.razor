@@ -1,0 +1,24 @@
+@inherits LayoutComponentBase
+@using app.blazor.UI.Themes
+
+<MudThemeProvider Theme="@AppTheme.Theme" />
+<MudLayout>
+    <MudAppBar Elevation="2">
+        <MudToolBar Class="width-full">
+            <MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex justify-space-between align-center pa-0">
+                <MudImage Src="img/logo/logo.png" Alt="Template App" Width="60" />
+
+                <MudStack Row Class="gap-2">            
+                    <MudButton Href="/user/login" Color="Color.Primary" Variant="Variant.Filled">Entrar</MudButton>
+                    <MudButton Href="/user/register" Color="Color.Secondary" Variant="Variant.Filled">Registrar</MudButton>
+                </MudStack>
+            </MudContainer>
+        </MudToolBar>
+    </MudAppBar>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="pa-0 ma-auto">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
