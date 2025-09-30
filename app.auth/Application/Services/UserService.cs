@@ -1,6 +1,5 @@
-using app.auth.Application.Db;
 using app.auth.Application.Models;
-using app.auth.Application.UOW;
+using app.auth.Application.Repositories;
 using app.shared.Libs.DTOs.User;
 using app.shared.Libs.Responses;
 
@@ -8,40 +7,47 @@ namespace app.auth.Application.Services;
 
 public class UserService {
     private readonly ErrorLogService _errorLogService;
-    private readonly IUnitOfWork _uow;
-    public UserService(IUnitOfWork uow, ErrorLogService errorLogService) {
-        _uow = uow;
+    private readonly IUserRepository _userRepository;
+    public UserService(IUserRepository userRepository, ErrorLogService errorLogService) {
+        _userRepository = userRepository;
         _errorLogService = errorLogService;
     }
 
     public async Task<SimpleResponse> RegisterAsync(RegisterDTO dto) {
-        if (string.IsNullOrWhiteSpace(dto.Email) || 
-            string.IsNullOrWhiteSpace(dto.Username) || 
+        // Basic validation
+        if (string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Username) ||
             string.IsNullOrWhiteSpace(dto.Password) ||
-            string.IsNullOrWhiteSpace(dto.FullName)) {
+            string.IsNullOrWhiteSpace(dto.FullName))
+        {
             return SimpleResponse.CreateError("Todos os campos são obrigatórios.");
         }
-        await _uow.BeginTransactionAsync();
+        // Trim and normalize inputs
+        dto.FullName = dto.FullName.Trim();
+        dto.Username = dto.Username.Trim().ToLower();
+        dto.Email = dto.Email.Trim().ToLower();
+
+        await _userRepository.BeginTransactionAsync();
         try {
-            var exists = await _uow.Users.ExistsAsync(dto.Email, dto.Username);
+            var exists = await _userRepository.ExistsAsync(dto.Email, dto.Username);
 
             if (exists) {
-                await _uow.RollbackAsync();
+                await _userRepository.RollbackAsync();
                 return SimpleResponse.CreateError("Email ou usuário já cadastrado.");
             }
 
             var user = new User
             {
-                FullName = dto.FullName.Trim(),
-                Username = dto.Username.Trim().ToLower(),
-                Email = dto.Email.Trim().ToLower(),
+                FullName = dto.FullName,
+                Username = dto.Username,
+                Email = dto.Email,
                 Password = HashPassword(dto.Password),
                 InsertDate = DateTime.UtcNow,
                 UpdateDate = DateTime.UtcNow,
             };
 
-            await _uow.Users.AddAsync(user);
-            if (await _uow.SaveChangesAsync() > 0)
+            await _userRepository.AddAsync(user);
+            if (await _userRepository.SaveChangesAsync() > 0)
             {
                 var userRole = new UserRole
                 {
@@ -51,19 +57,19 @@ public class UserService {
                     UptadeDate = DateTime.UtcNow,
                 };
 
-                _uow.UserRoles.Add(userRole);
-                if (await _uow.SaveChangesAsync() > 0)
+                user.UserRoles.Add(userRole);
+                if (await _userRepository.SaveChangesAsync() > 0)
                 {
-                    await _uow.CommitAsync();
+                    await _userRepository.CommitAsync();
                     return SimpleResponse.CreateSuccess("Usuário registrado com sucesso.");
                 }
             }
-            await _uow.RollbackAsync();
+            await _userRepository.RollbackAsync();
             return SimpleResponse.CreateError("Erro interno ao registrar usuário.");
         }
         catch (Exception ex) {
             await _errorLogService.LogErrorAsync(0, $"{nameof(UserService)}.{nameof(RegisterAsync)}", ex);
-            await _uow.RollbackAsync();
+            await _userRepository.RollbackAsync();
             return SimpleResponse.CreateError("Erro interno do servidor. Tente novamente.");
         } 
     }
@@ -74,7 +80,7 @@ public class UserService {
                 return Response<User>.CreateError("Email e senha são obrigatórios.");
             }
 
-            var user = await _uow.Users.GetByEmailAsync(email);
+            var user = await _userRepository.GetByEmailAsync(email);
             
             if (user == null) {
                 return Response<User>.CreateError("Credenciais inválidas.");

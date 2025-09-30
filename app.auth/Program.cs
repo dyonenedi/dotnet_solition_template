@@ -1,9 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using app.auth.Application.Db;
+using app.auth.Application.DB;
 using app.auth.Application.Repositories;
-using app.auth.Application.UOW;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +14,6 @@ builder.Services.AddOpenApi();
 
 // Configure Entity Framework
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), 
         new MySqlServerVersion(new Version(8, 0, 21))));

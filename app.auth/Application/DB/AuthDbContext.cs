@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using app.auth.Application.Models;
 
-namespace app.auth.Application.Db;
+namespace app.auth.Application.DB;
 
 public partial class AuthDbContext : DbContext
 {
@@ -27,17 +27,21 @@ public partial class AuthDbContext : DbContext
     {
         
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .UseCollation("utf8_general_ci")
-            .HasCharSet("utf8");
+            .UseCollation("utf8mb4_general_ci")
+            .HasCharSet("utf8mb4");
 
         modelBuilder.Entity<ErrorLog>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("error_log");
+            entity
+                .ToTable("error_log")
+                .HasCharSet("utf8")
+                .UseCollation("utf8_general_ci");
 
             entity.HasIndex(e => e.ExceptionType, "exception_type");
 
@@ -69,7 +73,10 @@ public partial class AuthDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("user");
+            entity
+                .ToTable("user")
+                .HasCharSet("utf8")
+                .UseCollation("utf8_general_ci");
 
             entity.HasIndex(e => e.Active, "active");
 
@@ -77,7 +84,11 @@ public partial class AuthDbContext : DbContext
 
             entity.HasIndex(e => e.FullName, "fullname");
 
+            entity.HasIndex(e => e.InsertDate, "insert_date");
+
             entity.HasIndex(e => e.Password, "password");
+
+            entity.HasIndex(e => e.UpdateDate, "update_date");
 
             entity.HasIndex(e => e.Username, "username").IsUnique();
 
@@ -126,11 +137,18 @@ public partial class AuthDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("user_roles");
+            entity
+                .ToTable("user_role")
+                .HasCharSet("utf8")
+                .UseCollation("utf8_general_ci");
 
             entity.HasIndex(e => e.Id, "id");
 
+            entity.HasIndex(e => e.InsertDate, "insert_date");
+
             entity.HasIndex(e => e.Role, "role");
+
+            entity.HasIndex(e => e.UptadeDate, "uptade_date");
 
             entity.HasIndex(e => e.UserId, "user_id");
 
@@ -156,7 +174,7 @@ public partial class AuthDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK_user_roles_user");
+                .HasConstraintName("user_role_ibfk_1");
         });
 
         OnModelCreatingPartial(modelBuilder);

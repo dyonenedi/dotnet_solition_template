@@ -100,8 +100,8 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 -- Exportação de dados foi desmarcado.
 
--- Copiando estrutura para tabela app.user_roles
-CREATE TABLE IF NOT EXISTS `user_roles` (
+-- Copiando estrutura para tabela app.user_role
+CREATE TABLE IF NOT EXISTS `user_role` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `role` enum('USER','MODERATOR','ADM') NOT NULL DEFAULT 'USER',
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   KEY `user_id` (`user_id`) USING BTREE,
   KEY `insert_date` (`insert_date`),
   KEY `uptade_date` (`uptade_date`),
-  CONSTRAINT `user_roles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `user_role_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
 
 -- Exportação de dados foi desmarcado.

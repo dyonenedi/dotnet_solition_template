@@ -1,7 +1,7 @@
 using app.auth.Application.Models;
 
 namespace app.auth.Application.Repositories;
-public interface IUserRepository
+public interface IUserRepository: ITransactionRepository
 {
     Task<bool> ExistsAsync(string email, string username);
     Task AddAsync(User user);

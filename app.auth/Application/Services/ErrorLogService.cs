@@ -1,4 +1,4 @@
-using app.auth.Application.Db;
+using app.auth.Application.DB;
 
 namespace app.auth.Application.Services;
 
