@@ -20,7 +20,7 @@ public class UserService {
             string.IsNullOrWhiteSpace(dto.Password) ||
             string.IsNullOrWhiteSpace(dto.FullName))
         {
-            return SimpleResponse.CreateError("Todos os campos são obrigatórios.");
+            return SimpleResponse.CreateError("Todos os campos são obrigatórios.").WithStatus(OperationStatus.ValidationError);
         }
         // Trim and normalize inputs
         dto.FullName = dto.FullName.Trim();
@@ -33,7 +33,7 @@ public class UserService {
 
             if (exists) {
                 await _userRepository.RollbackAsync();
-                return SimpleResponse.CreateError("Email ou usuário já cadastrado.");
+                return SimpleResponse.CreateError("Email ou usuário já cadastrado.").WithStatus(OperationStatus.Conflict);
             }
 
             var user = new User
@@ -61,40 +61,40 @@ public class UserService {
                 if (await _userRepository.SaveChangesAsync() > 0)
                 {
                     await _userRepository.CommitAsync();
-                    return SimpleResponse.CreateSuccess("Usuário registrado com sucesso.");
+                    return SimpleResponse.CreateSuccess("Usuário registrado com sucesso.").WithStatus(OperationStatus.Success);
                 }
             }
             await _userRepository.RollbackAsync();
-            return SimpleResponse.CreateError("Erro interno ao registrar usuário.");
+            return SimpleResponse.CreateError("Erro interno ao registrar usuário.").WithStatus(OperationStatus.Error);
         }
         catch (Exception ex) {
             await _errorLogService.LogErrorAsync(0, $"{nameof(UserService)}.{nameof(RegisterAsync)}", ex);
             await _userRepository.RollbackAsync();
-            return SimpleResponse.CreateError("Erro interno do servidor. Tente novamente.");
+            return SimpleResponse.CreateError("Erro interno do servidor. Tente novamente.").WithStatus(OperationStatus.Error);
         } 
     }
 
     public async Task<Response<User>> AuthenticateAsync(string email, string password) {
         try {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password)) {
-                return Response<User>.CreateError("Email e senha são obrigatórios.");
+                return Response<User>.CreateError("Email e senha são obrigatórios.").WithStatus(OperationStatus.ValidationError);
             }
 
             var user = await _userRepository.GetByEmailAsync(email);
             
             if (user == null) {
-                return Response<User>.CreateError("Credenciais inválidas.");
+                return Response<User>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
             }
 
             if (!VerifyPassword(password, user.Password)) {
-                return Response<User>.CreateError("Credenciais inválidas.");
+                return Response<User>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
             }
             
-            return Response<User>.CreateSuccess(user, "Autenticação realizada com sucesso.");
+            return Response<User>.CreateSuccess(user, "Autenticação realizada com sucesso.").WithStatus(OperationStatus.Success);
         }
         catch (Exception ex) {
             await _errorLogService.LogErrorAsync(0, $"{nameof(UserService)}.{nameof(AuthenticateAsync)}", ex);
-            return Response<User>.CreateError("Erro interno do servidor. Tente novamente.");
+            return Response<User>.CreateError("Erro interno do servidor. Tente novamente.").WithStatus(OperationStatus.Error);
         }
     }
 
