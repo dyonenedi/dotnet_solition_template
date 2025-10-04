@@ -2,6 +2,7 @@ using System.Reflection;
 using app.auth.Application.DB;
 using app.auth.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
+using app.auth.Application.Utils;
 
 namespace app.auth.Extentions
 {
@@ -46,6 +47,7 @@ namespace app.auth.Extentions
             });
             builder.Services.AddAuthorization();
             builder.Services.AddAuthentication();
+            builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
         }
     }
 }

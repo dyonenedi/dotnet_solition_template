@@ -2,16 +2,20 @@ using app.shared.Libs.DTOs.User;
 using app.blazor.UI.ViewModels.User;
 using app.shared.Libs.Responses;
 using System.Text.Json;
+using app.blazor.Utils;
+using Blazored.LocalStorage;
 
 namespace app.blazor.UI.Handlers;
 
 public class AuthHandler
 {
     private readonly HttpClient _authHttp;
+    private readonly JwtAuthenticationStateProvider _jwtAuthProvider;
 
-    public AuthHandler(IHttpClientFactory httpClientFactory)
+    public AuthHandler(IHttpClientFactory httpClientFactory, ILocalStorageService storage, JwtAuthenticationStateProvider JwtAuthenticationStateProvider)
     {
         _authHttp = httpClientFactory.CreateClient("AUTH");
+        _jwtAuthProvider = JwtAuthenticationStateProvider;
     }
 
     public async Task<SimpleResponse> RegisterAsync(RegisterViewModel user)
@@ -83,10 +87,26 @@ public class AuthHandler
             };
 
             var response = await _authHttp.PostAsJsonAsync("v1/user/login", dto);
-            if (response.IsSuccessStatusCode)
+            if (response != null && response.IsSuccessStatusCode)
             {
-                var simpleResponse = await response.Content.ReadFromJsonAsync<SimpleResponse>();
-                return simpleResponse ?? SimpleResponse.CreateError("Erro ao processar resposta do servidor");
+                var dataResponse = await response.Content.ReadFromJsonAsync<Response<LoginDTO>>();
+                if (dataResponse != null && dataResponse.Success && dataResponse.Data != null)
+                {
+                    // Atualiza o token no ViewModel
+                    var responseData = JsonSerializer.Deserialize<LoginDTO>(dataResponse.Data.ToString() ?? "");
+                    if (responseData != null && !string.IsNullOrWhiteSpace(responseData.Token))
+                    {
+                        var accessToken = responseData.Token;
+                        await _jwtAuthProvider.SetAsync(accessToken);
+                        _authHttp.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+                        return SimpleResponse.CreateSuccess("Logado com sucesso");
+                    } else {
+                        return SimpleResponse.CreateError("Erro ao processar resposta do servidor");
+                    }
+                } else {
+                    return SimpleResponse.CreateError("Erro ao processar resposta do servidor");
+                }
             }
             else
             {

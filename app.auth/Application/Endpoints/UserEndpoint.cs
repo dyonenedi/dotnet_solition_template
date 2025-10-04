@@ -43,7 +43,7 @@ namespace app.auth.Application.Endpoints
                 LoginDTO dto,
                 UserService userService) =>
             {
-                var response = await userService.AuthenticateAsync(dto.Email, dto.Password);
+                var response = await userService.AuthenticateAsync(dto);
 
                 return response.Status switch
                 {

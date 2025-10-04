@@ -1,5 +1,6 @@
 using app.auth.Application.Models;
 using app.auth.Application.Repositories;
+using app.auth.Application.Utils;
 using app.shared.Libs.DTOs.User;
 using app.shared.Libs.Responses;
 
@@ -8,9 +9,13 @@ namespace app.auth.Application.Services;
 public class UserService {
     private readonly ErrorLogService _errorLogService;
     private readonly IUserRepository _userRepository;
-    public UserService(IUserRepository userRepository, ErrorLogService errorLogService) {
+    private readonly IJwtTokenService _jwt;
+
+    public UserService(IUserRepository userRepository, ErrorLogService errorLogService, IJwtTokenService JwtTokenService)
+    {
         _userRepository = userRepository;
         _errorLogService = errorLogService;
+        _jwt = JwtTokenService;
     }
 
     public async Task<SimpleResponse> RegisterAsync(RegisterDTO dto) {
@@ -74,27 +79,31 @@ public class UserService {
         } 
     }
 
-    public async Task<Response<User>> AuthenticateAsync(string email, string password) {
+    public async Task<Response<LoginDTO>> AuthenticateAsync(LoginDTO dto) {
         try {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password)) {
-                return Response<User>.CreateError("Email e senha são obrigatórios.").WithStatus(OperationStatus.ValidationError);
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password)) {
+                return Response<LoginDTO>.CreateError("Email e senha são obrigatórios.").WithStatus(OperationStatus.ValidationError);
             }
 
-            var user = await _userRepository.GetByEmailAsync(email);
+            dto.Email = dto.Email.Trim().ToLower();
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
             
             if (user == null) {
-                return Response<User>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
+                return Response<LoginDTO>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
             }
 
-            if (!VerifyPassword(password, user.Password)) {
-                return Response<User>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
+            if (!VerifyPassword(dto.Password, user.Password)) {
+                return Response<LoginDTO>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
             }
             
-            return Response<User>.CreateSuccess(user, "Autenticação realizada com sucesso.").WithStatus(OperationStatus.Success);
+            var token = _jwt.CreateToken(user.Id.ToString(), user.Email, user.UserRoles.Select(ur => ur.Role));
+            dto.Token = token;
+
+            return Response<LoginDTO>.CreateSuccess(dto, "Autenticação realizada com sucesso.").WithStatus(OperationStatus.Success);
         }
         catch (Exception ex) {
             await _errorLogService.LogErrorAsync(0, $"{nameof(UserService)}.{nameof(AuthenticateAsync)}", ex);
-            return Response<User>.CreateError("Erro interno do servidor. Tente novamente.").WithStatus(OperationStatus.Error);
+            return Response<LoginDTO>.CreateError("Erro interno do servidor. Tente novamente.").WithStatus(OperationStatus.Error);
         }
     }
 
