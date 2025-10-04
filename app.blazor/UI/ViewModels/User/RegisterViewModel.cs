@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace app.blazor.UI.ViewModels;
+namespace app.blazor.UI.ViewModels.User;
 
 public class RegisterViewModel
 {

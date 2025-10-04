@@ -1,5 +1,5 @@
 using app.blazor.UI.Handlers;
-using app.blazor.UI.ViewModels;
+using app.blazor.UI.ViewModels.User;
 using app.shared.Libs.Responses;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -8,7 +8,7 @@ namespace app.blazor.UI.Pages.User;
 
 public partial class Register
 {
-    [Inject] private RegisterHandler registerHandler { get; set; } = null!;
+    [Inject] private AuthHandler AuthHandler { get; set; } = null!;
     [Inject] private NavigationManager navigationManager { get; set; } = null!;
     private RegisterViewModel model = new();
     private bool isLoading = false;
@@ -24,7 +24,7 @@ public partial class Register
 
         try
         {
-            response = await registerHandler.SubmitAsync(model);
+            response = await AuthHandler.RegisterAsync(model);
             if (response.Success)
             {
                 message = "Cadastro realizado com sucesso!";

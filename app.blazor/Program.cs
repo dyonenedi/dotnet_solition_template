@@ -16,7 +16,7 @@ if (builder.Environment.IsDevelopment())
     // HttpClient para app.auth (porta 6000)
     builder.Services.AddHttpClient("AUTH", client =>
     {
-        client.BaseAddress = new Uri("https://localhost:6000/");
+        client.BaseAddress = new Uri("https://localhost:5006/");
     })
     .ConfigurePrimaryHttpMessageHandler(() =>
     {
@@ -28,7 +28,7 @@ if (builder.Environment.IsDevelopment())
     // HttpClient para app.api (porta 7000)
     builder.Services.AddHttpClient("API", client =>
     {
-        client.BaseAddress = new Uri("https://localhost:7000/");
+        client.BaseAddress = new Uri("https://localhost:5007/");
     })
     .ConfigurePrimaryHttpMessageHandler(() =>
     {
@@ -51,9 +51,9 @@ else
         client.BaseAddress = new Uri("https://localhost:7000/");
     });
 }
-
-builder.Services.AddScoped<RegisterHandler>();
 #endregion
+
+builder.Services.AddScoped<AuthHandler>();
 
 var app = builder.Build();
 

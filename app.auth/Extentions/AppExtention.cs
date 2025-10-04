@@ -5,11 +5,15 @@ public static class AppExtention
     {
         app.UseAuthentication();
         app.UseAuthorization();
+
         if (app.Environment.IsDevelopment())
         {
-            //app.MapOpenApi();
             app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                //options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+            });
         }
-        app.UseHttpsRedirection();
     }
 }

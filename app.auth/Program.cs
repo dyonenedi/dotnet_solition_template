@@ -11,4 +11,7 @@ var app = builder.Build();
 app.MapUserEndpoints();
 
 app.UseArchtectures();
+
+app.UseHttpsRedirection();
+
 app.Run();

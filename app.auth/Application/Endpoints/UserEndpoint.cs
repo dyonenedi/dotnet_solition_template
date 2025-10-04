@@ -9,10 +9,12 @@ namespace app.auth.Application.Endpoints
     {
         public static void MapUserEndpoints(this WebApplication app)
         {
+
             var userGroup = app.MapGroup("v1/user")
                 .WithTags("User")
                 .WithDescription("User management endpoints");
 
+            #region REGISTER
             userGroup.MapPost("register", async (
                 RegisterDTO dto,
                 UserService userService) =>
@@ -34,7 +36,9 @@ namespace app.auth.Application.Endpoints
             .Produces<SimpleResponse>(400, "application/json")  // Bad Request (validação)
             .Produces<SimpleResponse>(409, "application/json")  // Conflict (já existe)
             .ProducesProblem(500);
+            #endregion
 
+            #region LOGIN
             userGroup.MapPost("login", async (
                 LoginDTO dto,
                 UserService userService) =>
@@ -56,6 +60,7 @@ namespace app.auth.Application.Endpoints
             .Produces<Response<User>>(400, "application/json")   // Bad Request (validação)
             .Produces(401)                                       // Unauthorized (credenciais inválidas)
             .ProducesProblem(500);
+            #endregion
         }
     }
 }
