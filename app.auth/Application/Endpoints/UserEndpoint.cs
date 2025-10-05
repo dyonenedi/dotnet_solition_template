@@ -56,8 +56,8 @@ namespace app.auth.Application.Endpoints
             .WithName("LoginUser")
             .WithSummary("Authenticate user")
             .WithDescription("Authenticates user with email and password")
-            .Produces<Response<User>>(200, "application/json")   // Success
-            .Produces<Response<User>>(400, "application/json")   // Bad Request (validação)
+            .Produces<Response<LoginDTO>>(200, "application/json")   // Success
+            .Produces<Response<LoginDTO>>(400, "application/json")   // Bad Request (validação)
             .Produces(401)                                       // Unauthorized (credenciais inválidas)
             .ProducesProblem(500);
             #endregion

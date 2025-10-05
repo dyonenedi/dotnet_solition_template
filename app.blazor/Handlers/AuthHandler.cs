@@ -2,20 +2,23 @@ using app.shared.Libs.DTOs.User;
 using app.blazor.UI.ViewModels.User;
 using app.shared.Libs.Responses;
 using System.Text.Json;
-using app.blazor.Utils;
-using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
 
 namespace app.blazor.UI.Handlers;
 
 public class AuthHandler
 {
     private readonly HttpClient _authHttp;
-    private readonly JwtAuthenticationStateProvider _jwtAuthProvider;
+    private readonly HttpClient _apiHttp;
+    private readonly HttpClient _blazorHttp;
+    private readonly NavigationManager _nav;
 
-    public AuthHandler(IHttpClientFactory httpClientFactory, ILocalStorageService storage, JwtAuthenticationStateProvider JwtAuthenticationStateProvider)
+    public AuthHandler(IHttpClientFactory httpClientFactory, NavigationManager NavigationManager)
     {
         _authHttp = httpClientFactory.CreateClient("AUTH");
-        _jwtAuthProvider = JwtAuthenticationStateProvider;
+        _apiHttp = httpClientFactory.CreateClient("API");
+        _blazorHttp = httpClientFactory.CreateClient("BLAZOR");
+        _nav = NavigationManager;
     }
 
     public async Task<SimpleResponse> RegisterAsync(RegisterViewModel user)
@@ -74,10 +77,8 @@ public class AuthHandler
 
     public async Task<SimpleResponse> LoginAsyc(LoginViewModel user)
     {
-        if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Password)) {
+        if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Password))
             return new SimpleResponse();
-        }
-
         try
         {
             var dto = new LoginDTO()
@@ -92,19 +93,21 @@ public class AuthHandler
                 var dataResponse = await response.Content.ReadFromJsonAsync<Response<LoginDTO>>();
                 if (dataResponse != null && dataResponse.Success && dataResponse.Data != null)
                 {
-                    // Atualiza o token no ViewModel
-                    var responseData = JsonSerializer.Deserialize<LoginDTO>(dataResponse.Data.ToString() ?? "");
-                    if (responseData != null && !string.IsNullOrWhiteSpace(responseData.Token))
+                    var responseData = dataResponse.Data;
+                    if (!string.IsNullOrWhiteSpace(responseData.Token))
                     {
                         var accessToken = responseData.Token;
-                        await _jwtAuthProvider.SetAsync(accessToken);
-                        _authHttp.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-
-                        return SimpleResponse.CreateSuccess("Logado com sucesso");
-                    } else {
-                        return SimpleResponse.CreateError("Erro ao processar resposta do servidor");
+                        _nav.NavigateTo($"/api/auth/set-token?token={Uri.EscapeDataString(accessToken)}", forceLoad: true);
+                        return SimpleResponse.CreateSuccess("Logando...");
                     }
-                } else {
+                    else
+                    {
+                        return SimpleResponse.CreateError("Erro ao processar token do servidor");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Unexpected error: {dataResponse?.Message}");
                     return SimpleResponse.CreateError("Erro ao processar resposta do servidor");
                 }
             }

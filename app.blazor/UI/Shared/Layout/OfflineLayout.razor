@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @using app.blazor.UI.Themes
+@using Microsoft.AspNetCore.Components.Authorization
 
 <MudThemeProvider Theme="@AppTheme.Theme" />
 <MudLayout>
@@ -18,7 +19,9 @@
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.Large" Class="pa-0 ma-auto">
-            @Body
+            <CascadingAuthenticationState>
+                @Body
+            </CascadingAuthenticationState>
         </MudContainer>
     </MudMainContent>
 </MudLayout>

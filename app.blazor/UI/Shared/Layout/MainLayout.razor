@@ -1,24 +1,29 @@
 ﻿@inherits LayoutComponentBase
+
+@using app.blazor.UI.Shared.Components
 @using app.blazor.UI.Themes
+@using Microsoft.AspNetCore.Components.Authorization
 <MudThemeProvider Theme="@AppTheme.Theme" />
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<MudLayout>
+    <MudAppBar Elevation="2">
+        <MudToolBar Class="width-full">
+            <MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex justify-space-between align-center pa-0">
+                <MudLink Href="/"><MudImage Src="img/logo/logo.png" Alt="Template App" Width="60" /></MudLink>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+                <MudStack Row Class="gap-2">            
+                    <MudButton Href="/user/register" Color="Color.Secondary" Variant="Variant.Filled">Configurações</MudButton>
+                    <MudButton Href="/user/login" Color="Color.Primary" Variant="Variant.Filled">Perfil</MudButton>
+                </MudStack>
+            </MudContainer>
+        </MudToolBar>
+    </MudAppBar>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="pa-0 ma-auto">
+            <CascadingAuthenticationState>
+                @Body
+            </CascadingAuthenticationState>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
