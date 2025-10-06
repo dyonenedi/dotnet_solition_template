@@ -1,0 +1,43 @@
+@page "/feed"
+@using app.blazor.UI.Pages.Feed.Components
+
+<MudItem Class="d-flex flex-colun mt-6" xl="12" lg="12" md="12" sm="12" xs="12">
+    <MudItem xl="4" lg="4" md="4" sm="4" xs="12">
+        <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="mb-4">
+            Esta é a página de Feed. Você pode personalizá-la conforme suas necessidades.
+        </MudAlert>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
+            Esta é a página de Feed. Você pode personalizá-la conforme suas necessidades.
+        </MudAlert>
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4">
+            Esta é a página de Feed. Você pode personalizá-la conforme suas necessidades.
+        </MudAlert>
+    </MudItem>
+
+    <MudItem xl="8" lg="8" md="8" sm="8" xs="12" Class="px-15">
+        <EditForm Model="model" OnValidSubmit="Submit" style="bluer: 1px solid #383fac; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <DataAnnotationsValidator />
+
+            <MudTextField T="string" 
+                Variant="Variant.Filled"
+                Label="O que você está pensando?" 
+                @bind-Value="model.text" 
+                For="@(() => model.text)"
+                Immediate="true"
+                FullWidth="true"
+                Lines="2"
+                />
+
+            <MudButton Size="Size.Small" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
+            @if (isLoading) { 
+                <MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Class="" />
+            } else {
+                <MudText>Postar</MudText> 
+            }
+            </MudButton>   
+        </EditForm>
+        
+        <FeedList />
+        <FeedList />
+    </MudItem>
+</MudItem>

@@ -1,0 +1,28 @@
+@page "/user/logoutttttt"
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject CookieAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+@code {
+    protected override void OnInitialized()
+    {
+        try
+        {
+            if (HttpContextAccessor.HttpContext == null)
+            {
+                Navigation.NavigateTo("/user/login");
+                return;
+            }
+
+            HttpContextAccessor.HttpContext.Response.Cookies.Delete("accessToken");
+            Navigation.NavigateTo("/user/login");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao fazer logout: {ex.Message}");
+            Navigation.NavigateTo("/user/login");
+        }
+    }
+}
