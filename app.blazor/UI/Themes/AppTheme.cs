@@ -8,16 +8,17 @@ public static class AppTheme
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "50048c",
+            Primary = "#FF3E8F",
             Secondary = Colors.Gray.Darken3,
             Background = "#202436",
-            Surface = Colors.Shades.White,
+            Surface = "#131631",
+            Dark = Colors.Shades.Black,
             AppbarBackground = "#050A1E",
             AppbarText = Colors.Shades.White,
             DrawerBackground = "#050A1E",
             DrawerText = Colors.Shades.White,
             DrawerIcon = Colors.Shades.White,
-            TextPrimary = Colors.Gray.Darken4,
+            TextPrimary = Colors.Shades.White,
             TextSecondary = Colors.Gray.Darken3,
 
             Success = Colors.Green.Default,
@@ -27,10 +28,11 @@ public static class AppTheme
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "50048c",
+            Primary = "#50048c",
             Secondary = Colors.Gray.Darken2,
             Background = "#202436",
-            Surface = Colors.Shades.White,
+            Surface = "#FFFFFF",
+            Dark = Colors.Shades.Black,
             AppbarBackground = "#050A1E",
             AppbarText = Colors.Shades.White,
             DrawerBackground = "#050A1E",

@@ -6,8 +6,11 @@ html, body {
     width: 100%;
 }
 
-.width-full {
+.w-full {
     width: 100%;
+}
+.h-full {
+    height: 100%;
 }
 
 .btn-primary{

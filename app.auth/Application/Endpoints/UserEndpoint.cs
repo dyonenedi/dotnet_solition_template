@@ -1,7 +1,6 @@
 using app.auth.Application.Services;
 using app.shared.Libs.DTOs.User;
 using app.shared.Libs.Responses;
-using app.auth.Application.Models;
 
 namespace app.auth.Application.Endpoints
 {
