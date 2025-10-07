@@ -6,9 +6,16 @@ namespace app.blazor.Handlers
     public class FeedHandler
     {
         private readonly HttpClient _apiHttp;
-        public FeedHandler(IHttpClientFactory httpClientFactory)
+        private readonly CookieAuthenticationStateProvider _authStateProvider;
+
+        public FeedHandler(IHttpClientFactory httpClientFactory, CookieAuthenticationStateProvider authStateProvider)
         {
+            _authStateProvider = authStateProvider;
             _apiHttp = httpClientFactory.CreateClient("API");
+            var jwtToken = _authStateProvider.GetJwtToken();
+            if (string.IsNullOrWhiteSpace(jwtToken))
+                return;
+            _apiHttp.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
         }
         public async Task<SimpleResponse> PostAsync(string text)
         {
@@ -16,6 +23,8 @@ namespace app.blazor.Handlers
             {
                 Text = text
             };
+
+            
             var response = await _apiHttp.PostAsJsonAsync("v1/feed/post", dto);
             if (response != null && response.IsSuccessStatusCode)
             {

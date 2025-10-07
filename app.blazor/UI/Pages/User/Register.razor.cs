@@ -1,4 +1,4 @@
-using app.blazor.UI.Handlers;
+using app.blazor.Handlers;
 using app.blazor.UI.ViewModels.User;
 using app.shared.Libs.Responses;
 using Microsoft.AspNetCore.Components;

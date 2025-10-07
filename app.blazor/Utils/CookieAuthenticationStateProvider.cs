@@ -44,4 +44,10 @@ public class CookieAuthenticationStateProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
     }
 
+    public string? GetJwtToken()
+    {
+        var context = _httpContextAccessor.HttpContext;
+        return context?.Request.Cookies["accessToken"];
+    }
+
 }

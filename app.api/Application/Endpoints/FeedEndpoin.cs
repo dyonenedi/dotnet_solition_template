@@ -13,9 +13,11 @@ namespace app.api.Application.Endpoints
                 .WithDescription("Feed management endpoints");
 
             #region Post Feed
-            feedEndpoint.MapPost("post", async (PostDto dto, FeedService feedService) =>
+            feedEndpoint.MapPost("post", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
             {
-                var response = await feedService.PostAsync(dto);
+                var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var jwtSecret = config["Jwt:Secret"] ?? string.Empty;
+                var response = await feedService.PostAsync(dto, jwtToken, jwtSecret);
                 return response.Status switch
                 {
                     OperationStatus.Success => Results.Ok(response),
@@ -23,7 +25,8 @@ namespace app.api.Application.Endpoints
                     OperationStatus.Conflict => Results.Conflict(response),
                     _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
                 };
-            }).WithName("RegisterPost")
+            })
+            .WithName("RegisterPost")
             .WithSummary("Register a new post")
             .WithDescription("Creates a new post with the provided information")
             .Produces<SimpleResponse>(201, "application/json")  // Created
@@ -32,9 +35,12 @@ namespace app.api.Application.Endpoints
             .ProducesProblem(500);
             #endregion
 
-            feedEndpoint.MapGet("getposts", async (FeedService feedService) =>
+            #region Get Post Feeds
+            feedEndpoint.MapGet("getposts", async (HttpContext httpContext, FeedService feedService, IConfiguration config) =>
             {
-                var response = await feedService.GetPostsAsync();
+                var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var jwtSecret = config["Jwt:Secret"] ?? string.Empty;
+                var response = await feedService.GetPostsAsync(jwtToken, jwtSecret);
                 return response.Status switch
                 {
                     OperationStatus.Success => Results.Ok(response),
@@ -49,6 +55,7 @@ namespace app.api.Application.Endpoints
             .Produces<Response<List<PostDto>>>(400, "application/json")  // Bad Request (validação)
             .Produces<Response<List<PostDto>>>(409, "application/json")  // Conflict (já existe)
             .ProducesProblem(500);
+            #endregion 
             
         }
     }

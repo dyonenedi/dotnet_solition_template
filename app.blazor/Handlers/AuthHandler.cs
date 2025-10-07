@@ -4,7 +4,7 @@ using app.shared.Libs.Responses;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 
-namespace app.blazor.UI.Handlers;
+namespace app.blazor.Handlers;
 
 public class AuthHandler
 {
