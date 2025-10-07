@@ -22,7 +22,7 @@ namespace app.auth.Application.Endpoints
 
                 return response.Status switch
                 {
-                    OperationStatus.Success => Results.Created($"/v1/user/{dto.Username}", response),
+                    OperationStatus.Success => Results.Ok(response),
                     OperationStatus.ValidationError => Results.BadRequest(response),
                     OperationStatus.Conflict => Results.Conflict(response),
                     _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")

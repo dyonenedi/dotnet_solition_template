@@ -75,7 +75,15 @@ else
 }
 #endregion
 
-builder.Services.AddScoped<AuthHandler>();
+// Dynamically register all handlers from app.blazor.Handlers namespace
+var handlerTypes = typeof(Program).Assembly.GetTypes()
+    .Where(t => t.Namespace == "app.blazor.Handlers" && t.IsClass && !t.IsAbstract);
+
+foreach (var type in handlerTypes)
+{
+    builder.Services.AddScoped(type);
+}
+
 builder.Services.AddAuthentication("MyCookie")
     .AddCookie("MyCookie", options => {
         options.Cookie.Name = "accessToken"; // ou o nome do seu cookie

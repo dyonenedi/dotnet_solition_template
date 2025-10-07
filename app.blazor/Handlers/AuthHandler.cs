@@ -9,15 +9,11 @@ namespace app.blazor.UI.Handlers;
 public class AuthHandler
 {
     private readonly HttpClient _authHttp;
-    private readonly HttpClient _apiHttp;
-    private readonly HttpClient _blazorHttp;
     private readonly NavigationManager _nav;
 
     public AuthHandler(IHttpClientFactory httpClientFactory, NavigationManager NavigationManager)
     {
         _authHttp = httpClientFactory.CreateClient("AUTH");
-        _apiHttp = httpClientFactory.CreateClient("API");
-        _blazorHttp = httpClientFactory.CreateClient("BLAZOR");
         _nav = NavigationManager;
     }
 

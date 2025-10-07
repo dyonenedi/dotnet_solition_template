@@ -1,4 +1,4 @@
-using app.api.Application.Db;
+using app.api.Application.DB;
 
 namespace app.api.Application.Services;
 

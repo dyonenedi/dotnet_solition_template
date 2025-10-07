@@ -25,19 +25,19 @@ public class Response<T>
         return new Response<T>(true, message, Enums.MessageType.Success, data, OperationStatus.Success);
     }
 
-    public static Response<T> CreateError(string message, T? data = default)
+    public static Response<T> CreateError(string message, T? data = default, OperationStatus status = OperationStatus.Error)
     {
-        return new Response<T>(false, message, Enums.MessageType.Error, data, OperationStatus.Error);
+        return new Response<T>(false, message, Enums.MessageType.Error, data, status);
     }
 
-    public static Response<T> CreateWarning(string message, T? data = default)
+    public static Response<T> CreateWarning(string message, T? data = default, OperationStatus status = OperationStatus.Error)
     {
-        return new Response<T>(false, message, Enums.MessageType.Warning, data, OperationStatus.ValidationError);
+        return new Response<T>(false, message, Enums.MessageType.Warning, data, status);
     }
 
-    public static Response<T> CreateInfo(string message, T? data = default)
+    public static Response<T> CreateInfo(string message, T? data = default, OperationStatus state = OperationStatus.Error)
     {
-        return new Response<T>(true, message, Enums.MessageType.Info, data, OperationStatus.Success);
+        return new Response<T>(true, message, Enums.MessageType.Info, data, state);
     }
     #endregion
 

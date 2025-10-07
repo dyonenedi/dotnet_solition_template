@@ -20,6 +20,7 @@ CREATE DATABASE IF NOT EXISTS `app` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLA
 USE `app`;
 
 -- Copiando estrutura para tabela app.error_log
+DROP TABLE IF EXISTS `error_log`;
 CREATE TABLE IF NOT EXISTS `error_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
@@ -36,9 +37,11 @@ CREATE TABLE IF NOT EXISTS `error_log` (
 -- Exportação de dados foi desmarcado.
 
 -- Copiando estrutura para tabela app.post
+DROP TABLE IF EXISTS `post`;
 CREATE TABLE IF NOT EXISTS `post` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
+  `text` text NOT NULL,
   `insert_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `update_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `active` tinyint(1) NOT NULL DEFAULT 1,
@@ -54,6 +57,7 @@ CREATE TABLE IF NOT EXISTS `post` (
 -- Exportação de dados foi desmarcado.
 
 -- Copiando estrutura para tabela app.post_like
+DROP TABLE IF EXISTS `post_like`;
 CREATE TABLE IF NOT EXISTS `post_like` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `liker_id` int(11) NOT NULL,
@@ -76,6 +80,7 @@ CREATE TABLE IF NOT EXISTS `post_like` (
 -- Exportação de dados foi desmarcado.
 
 -- Copiando estrutura para tabela app.user
+DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `full_name` char(50) NOT NULL DEFAULT '',
@@ -96,11 +101,12 @@ CREATE TABLE IF NOT EXISTS `user` (
   KEY `fullname` (`full_name`) USING BTREE,
   KEY `insert_date` (`insert_date`),
   KEY `update_date` (`update_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
 
 -- Exportação de dados foi desmarcado.
 
 -- Copiando estrutura para tabela app.user_role
+DROP TABLE IF EXISTS `user_role`;
 CREATE TABLE IF NOT EXISTS `user_role` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
@@ -114,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `user_role` (
   KEY `insert_date` (`insert_date`),
   KEY `uptade_date` (`uptade_date`),
   CONSTRAINT `user_role_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
 
 -- Exportação de dados foi desmarcado.
 

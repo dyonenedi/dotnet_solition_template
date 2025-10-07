@@ -1,4 +1,4 @@
-using app.api.Application.Db;
+using app.api.Application.DB;
 using app.api.Application.Models;
 using app.shared.Libs.DTOs.User;
 using app.shared.Libs.Responses;

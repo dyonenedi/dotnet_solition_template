@@ -47,8 +47,8 @@ public class UserService {
                 Username = dto.Username,
                 Email = dto.Email,
                 Password = HashPassword(dto.Password),
-                InsertDate = DateTime.UtcNow,
-                UpdateDate = DateTime.UtcNow,
+                InsertDate = DateTime.Now,
+                UpdateDate = DateTime.Now,
             };
 
             await _userRepository.AddAsync(user);
@@ -58,8 +58,8 @@ public class UserService {
                 {
                     UserId = user.Id,
                     Role = "USER",
-                    InsertDate = DateTime.UtcNow,
-                    UptadeDate = DateTime.UtcNow,
+                    InsertDate = DateTime.Now,
+                    UptadeDate = DateTime.Now,
                 };
 
                 user.UserRoles.Add(userRole);

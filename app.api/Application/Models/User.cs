@@ -23,5 +23,9 @@ public partial class User
 
     public bool? Active { get; set; }
 
+    public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

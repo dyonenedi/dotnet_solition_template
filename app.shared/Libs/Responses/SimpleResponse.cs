@@ -25,9 +25,9 @@ public class SimpleResponse
         return new SimpleResponse(true, message, Enums.MessageType.Success, OperationStatus.Success);
     }
 
-    public static SimpleResponse CreateError(string message)
+    public static SimpleResponse CreateError(string message, OperationStatus status = OperationStatus.Error)
     {
-        return new SimpleResponse(false, message, Enums.MessageType.Error, OperationStatus.Error);
+        return new SimpleResponse(false, message, Enums.MessageType.Error, status);
     }
 
     public static SimpleResponse CreateWarning(string message)

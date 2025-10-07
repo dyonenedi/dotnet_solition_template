@@ -1,13 +1,15 @@
 using System.Reflection;
-using app.api.Application.Db;
+using app.api.Application.DB;
+using app.api.Application.Endpoints;
+using app.api.Application.Repositories;
+using app.auth.Application.Utils;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-// Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddScoped<IFeedRepository, FeedRepository>();
 
 // Configure Entity Framework
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -37,6 +39,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication();
+builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -56,6 +62,21 @@ app.UseCors();
 app.UseRouting();
 
 // Map controllers
-app.MapControllers();
+app.MapFeedEndpoints();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        //options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+    });
+}
+
+app.UseHttpsRedirection();
 
 app.Run();
