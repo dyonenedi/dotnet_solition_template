@@ -22,6 +22,7 @@
             @bind-Value="model.Username" 
             For="@(() => model.Username)"
             Immediate="true"
+            UserAttributes='new Dictionary<string, object> { { "autocomplete", "off" } }'
             />
                     
         <MudTextField T="string" 
@@ -30,6 +31,7 @@
             For="@(() => model.Email)"
             InputType="InputType.Email"
             Immediate="true"
+            UserAttributes='new Dictionary<string, object> { { "autocomplete", "off" } }'
             />
                     
         <MudTextField T="string" 
@@ -38,6 +40,7 @@
             For="@(() => model.Password)"
             InputType="InputType.Password"
             Immediate="true"
+            UserAttributes='new Dictionary<string, object> { { "autocomplete", "off" } }'
             />
                     
         <MudTextField T="string" 
@@ -46,6 +49,7 @@
             For="@(() => model.ConfirmPassword)"
             InputType="InputType.Password"
             Immediate="true"
+            UserAttributes='new Dictionary<string, object> { { "autocomplete", "off" } }'
             />
 
         <MudButton ButtonType="ButtonType.Submit"
