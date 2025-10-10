@@ -19,8 +19,8 @@ namespace app.api.Application.Repositories
             {
                 await _db.Posts.AddAsync(new Post
                 {
-                    Text = dto.Text,
-                    UserId = dto.UserId,
+                    Text = dto.Text ?? string.Empty,
+                    UserId = (int)dto.UserId!,
                     InsertDate = DateTime.Now,
                     UpdateDate = DateTime.Now,
                 });
@@ -33,8 +33,7 @@ namespace app.api.Application.Repositories
             }
             return SimpleResponse.CreateError("Erro ao validar dados do post", OperationStatus.ValidationError);
         }
-        
-        public async Task<List<PostDto>> GetAsync(int UserId)
+        public async Task<List<PostDto>> GetAsync(int? UserId)
         {
             var result = await _db.Posts
                 .Where(p => p.UserId == UserId)
@@ -57,6 +56,62 @@ namespace app.api.Application.Repositories
             {
                 return new List<PostDto>();
             }
+        }
+        public async Task<SimpleResponse> LikePostAsync(PostDto dto)
+        {
+            if (dto == null || dto.Id == null || dto.Id <= 0 || dto.UserId == null || dto.UserId <= 0)
+                return SimpleResponse.CreateError("Dados inválidos", OperationStatus.ValidationError);
+            var post = await _db.Posts.FindAsync(dto.Id);
+            if (post == null)
+                return SimpleResponse.CreateError("Post não encontrado", OperationStatus.NotFound);
+
+            var postLike = await _db.PostLikes.FirstOrDefaultAsync(pl => pl.PostId == dto.Id && pl.LikerId == dto.UserId);
+            if (postLike != null)
+            {
+                postLike.Active = !postLike.Active;
+                postLike.UpdateDate = DateTime.Now;
+                _db.PostLikes.Update(postLike);
+                if (await _db.SaveChangesAsync() > 0)
+                {
+                    return SimpleResponse.CreateSuccess("Post descurtido com sucesso");
+                }
+            }
+            else
+            {
+                post.PostLikes.Add(new PostLike
+                {
+                    LikerId = (int)dto.UserId,
+                    PostId = (int)dto.Id,
+                    InsertDate = DateTime.Now,
+                    UpdateDate = DateTime.Now,
+                    Active = true
+                });
+                if (await _db.SaveChangesAsync() > 0)
+                {
+                    return SimpleResponse.CreateSuccess("Post curtido com sucesso");
+                }
+            }
+
+            return SimpleResponse.CreateError("Erro ao curtir post", OperationStatus.Error);
+        }
+        public async Task<PostLikeDto> GetPostLikeAsync(int? postId, int userId)
+        {
+            var postLike = await _db.PostLikes.FirstOrDefaultAsync(pl => pl.PostId == postId && pl.LikerId == userId);
+            if (postLike != null)
+            {
+                return new PostLikeDto
+                {
+                    PostId = postLike.PostId,
+                    UserId = postLike.LikerId,
+                    IsLiked = postLike.Active ?? false
+                };
+            }
+            return new PostLikeDto
+            {
+                PostId = (int)postId!,
+                UserId = userId,
+                IsLiked = false
+            };
         }
     }
 }

@@ -13,10 +13,14 @@
         <MudDivider Class="my-4" />
         <MudText Typo="Typo.body2" Color="Color.Inherit">
             <MudItem Class="d-inline-block mr-4">
-                <MudLink><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Favorite" Color="Color.Error"></MudIcon> 10</MudLink>
+                <MudButton Variant="Variant.Text" Color="Color.Surface" OnClick="@LikePost">
+                    <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Favorite" Color="@(isLiked ? Color.Error : Color.Surface)" Class="me-1"></MudIcon> 10
+                </MudButton>
             </MudItem>
             <MudItem Class="d-inline-block mr-4">
-                <MudLink><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Comment" Color="Color.Inherit"></MudIcon> 5</MudLink>
+                <MudButton Variant="Variant.Text" Color="Color.Surface">
+                    <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Comment" Color="Color.Inherit" Class="me-1"></MudIcon> 5
+                </MudButton>
             </MudItem>
         </MudText>
     </MudCardContent>

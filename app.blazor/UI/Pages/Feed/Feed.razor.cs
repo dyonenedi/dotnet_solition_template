@@ -42,7 +42,7 @@ namespace app.blazor.UI.Pages.Feed
             }
             else
             {
-                Snackbar.Add("Erro ao carregar posts do feed. Tente novamente mais tarde.", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Erro ao carregar posts do feed. Tente novamente mais tarde.", Severity.Error);
             }
         }
 
