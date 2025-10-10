@@ -47,8 +47,8 @@ namespace app.auth.Application.Endpoints
                 return response.Status switch
                 {
                     OperationStatus.Success => Results.Ok(response),
+                    OperationStatus.Unauthorized => Results.Json(response, statusCode: 401),
                     OperationStatus.ValidationError => Results.BadRequest(response),
-                    OperationStatus.Unauthorized => Results.Unauthorized(),
                     _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
                 };
             })
@@ -56,8 +56,8 @@ namespace app.auth.Application.Endpoints
             .WithSummary("Authenticate user")
             .WithDescription("Authenticates user with email and password")
             .Produces<Response<LoginDTO>>(200, "application/json")   // Success
+            .Produces<Response<LoginDTO>>(401, "application/json")   // Unauthorized (credenciais inválidas)
             .Produces<Response<LoginDTO>>(400, "application/json")   // Bad Request (validação)
-            .Produces(401)                                       // Unauthorized (credenciais inválidas)
             .ProducesProblem(500);
             #endregion
         }

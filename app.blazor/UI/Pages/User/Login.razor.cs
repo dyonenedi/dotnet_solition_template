@@ -42,6 +42,10 @@ public partial class Login
             response = await AuthHandler.LoginAsyc(model);
             if (!response.Success)
             {
+                if (response.Status == OperationStatus.Unauthorized)
+                {
+                    navigationManager.NavigateTo("/api/auth/logout", true);
+                }
                 message = response.Message;
             }
         }

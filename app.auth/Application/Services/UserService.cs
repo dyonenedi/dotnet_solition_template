@@ -89,11 +89,11 @@ public class UserService {
             var user = await _userRepository.GetByEmailAsync(dto.Email);
             
             if (user == null) {
-                return Response<LoginDTO>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
+                return Response<LoginDTO>.CreateError("Email não cadastrado.").WithStatus(OperationStatus.Unauthorized);
             }
 
             if (!VerifyPassword(dto.Password, user.Password)) {
-                return Response<LoginDTO>.CreateError("Credenciais inválidas.").WithStatus(OperationStatus.Unauthorized);
+                return Response<LoginDTO>.CreateError("Senha ou Email inválido.").WithStatus(OperationStatus.Unauthorized);
             }
             
             var token = _jwt.CreateToken(user.Id.ToString(), user.Email, user.UserRoles.Select(ur => ur.Role));

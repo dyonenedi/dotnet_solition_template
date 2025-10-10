@@ -16,11 +16,12 @@ namespace app.api.Application.Endpoints
             feedEndpoint.MapPost("post", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
             {
                 var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var jwtSecret = config["Jwt:Secret"] ?? string.Empty;
+                var jwtSecret = config["Secret"] ?? string.Empty;
                 var response = await feedService.PostAsync(dto, jwtToken, jwtSecret);
                 return response.Status switch
                 {
                     OperationStatus.Success => Results.Ok(response),
+                    OperationStatus.Unauthorized => Results.Unauthorized(),
                     OperationStatus.ValidationError => Results.BadRequest(response),
                     OperationStatus.Conflict => Results.Conflict(response),
                     _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
@@ -30,33 +31,47 @@ namespace app.api.Application.Endpoints
             .WithSummary("Register a new post")
             .WithDescription("Creates a new post with the provided information")
             .Produces<SimpleResponse>(201, "application/json")  // Created
+            .Produces<SimpleResponse>(401, "application/json")  // Unauthorized
             .Produces<SimpleResponse>(400, "application/json")  // Bad Request (validação)
             .Produces<SimpleResponse>(409, "application/json")  // Conflict (já existe)
             .ProducesProblem(500);
             #endregion
 
-            #region Get Post Feeds
-            feedEndpoint.MapGet("getposts", async (HttpContext httpContext, FeedService feedService, IConfiguration config) =>
+            #region Get Feeds
+            feedEndpoint.MapGet("getposts", async (HttpContext httpContext, FeedService feedService, IConfiguration config, ErrorLogService errorLogService) =>
             {
-                var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var jwtSecret = config["Jwt:Secret"] ?? string.Empty;
-                var response = await feedService.GetPostsAsync(jwtToken, jwtSecret);
-                return response.Status switch
+                try
                 {
-                    OperationStatus.Success => Results.Ok(response),
-                    OperationStatus.ValidationError => Results.BadRequest(response),
-                    OperationStatus.Conflict => Results.Conflict(response),
-                    _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
-                };
+                    var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                    var jwtSecret = config["Secret"];
+                    if (string.IsNullOrEmpty(jwtToken) || string.IsNullOrEmpty(jwtSecret))
+                    {
+                        return Results.Unauthorized();
+                    }
+                    var response = await feedService.GetPostsAsync(jwtToken, jwtSecret);
+                    return response.Status switch
+                    {
+                        OperationStatus.Success => Results.Ok(response),
+                        OperationStatus.ValidationError => Results.BadRequest(response),
+                        OperationStatus.Unauthorized => Results.Unauthorized(),
+                        OperationStatus.Conflict => Results.Conflict(response),
+                        _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
+                    };
+                } catch (Exception ex)
+                {
+                    // Log de erro específico do endpoint
+                    await errorLogService.LogErrorAsync(0, nameof(FeedEndpoint), ex);
+                    return Results.Problem(detail: "Erro interno do servidor", statusCode: 500, title: "Erro interno do servidor");
+                }
             }).WithName("Get Posts")
             .WithSummary("Obter posts do feed")
             .WithDescription("Obtém todos os posts do feed do usuário")
             .Produces<Response<List<PostDto>>>(200, "application/json")  // OK
+            .Produces<Response<List<PostDto>>>(401, "application/json")  // Unauthorized
             .Produces<Response<List<PostDto>>>(400, "application/json")  // Bad Request (validação)
             .Produces<Response<List<PostDto>>>(409, "application/json")  // Conflict (já existe)
             .ProducesProblem(500);
             #endregion 
-            
         }
     }
 }

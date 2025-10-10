@@ -84,27 +84,38 @@ public class AuthHandler
             };
 
             var response = await _authHttp.PostAsJsonAsync("v1/user/login", dto);
-            if (response != null && response.IsSuccessStatusCode)
+            if (response != null)
             {
-                var dataResponse = await response.Content.ReadFromJsonAsync<Response<LoginDTO>>();
-                if (dataResponse != null && dataResponse.Success && dataResponse.Data != null)
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
                 {
-                    var responseData = dataResponse.Data;
-                    if (!string.IsNullOrWhiteSpace(responseData.Token))
+                    var dataResponse = await response.Content.ReadFromJsonAsync<Response<LoginDTO>>();
+                    if (dataResponse != null && dataResponse.Success && dataResponse.Data != null)
                     {
-                        var accessToken = responseData.Token;
-                        _nav.NavigateTo($"/api/auth/set-token?token={Uri.EscapeDataString(accessToken)}", forceLoad: true);
-                        return SimpleResponse.CreateSuccess("Logando...");
+                        var responseData = dataResponse.Data;
+                        if (!string.IsNullOrWhiteSpace(responseData.Token))
+                        {
+                            var accessToken = responseData.Token;
+                            _nav.NavigateTo($"/api/auth/set-token?token={Uri.EscapeDataString(accessToken)}", forceLoad: true);
+                            return SimpleResponse.CreateSuccess("Logando...");
+                        }
+                        else
+                        {
+                            return SimpleResponse.CreateError("Erro ao processar token do servidor");
+                        }
                     }
                     else
                     {
-                        return SimpleResponse.CreateError("Erro ao processar token do servidor");
+                        Console.WriteLine($"Unexpected error: {dataResponse?.Message}");
+                        return SimpleResponse.CreateError(dataResponse?.Message ?? "Erro ao processar resposta do servidor");
                     }
-                }
-                else
-                {
-                    Console.WriteLine($"Unexpected error: {dataResponse?.Message}");
-                    return SimpleResponse.CreateError("Erro ao processar resposta do servidor");
+                } else {
+                    Console.WriteLine($"Unexpected error: {response.StatusCode}");
+                    var errorResponse = JsonSerializer.Deserialize<Response<LoginDTO>>(jsonResponse, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return SimpleResponse.CreateError(errorResponse?.Message ?? response.StatusCode.ToString());
                 }
             }
             else

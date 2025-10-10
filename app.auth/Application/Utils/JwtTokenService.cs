@@ -10,14 +10,19 @@ public interface IJwtTokenService
 
 public class JwtTokenService : IJwtTokenService
 {
-    private readonly IConfiguration _config;
-    public JwtTokenService(IConfiguration config) => _config = config;
+    private readonly IConfiguration _configuration;
+    public JwtTokenService(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
 
     public string CreateToken(string userId, string email, IEnumerable<string> roles)
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Secret"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var secret = _configuration["Secret"];
+        if (string.IsNullOrEmpty(secret))
+            throw new ArgumentNullException(nameof(secret), "JWT Secret não configurado.");
+        var key = Encoding.UTF8.GetBytes(secret);
+        var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
         {
@@ -28,12 +33,12 @@ public class JwtTokenService : IJwtTokenService
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
         var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
             claims: claims,
             notBefore: DateTime.UtcNow,
             expires: DateTime.UtcNow.AddMinutes(
-                double.Parse(_config["Jwt:ExpiryMinutes"]!)),
+                double.Parse(_configuration["Jwt:ExpiryMinutes"]!)),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

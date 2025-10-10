@@ -1,5 +1,6 @@
 using app.shared.Libs.DTOs.Feed;
 using app.shared.Libs.Responses;
+using Microsoft.AspNetCore.Components;
 
 namespace app.blazor.Handlers
 {
@@ -7,9 +8,10 @@ namespace app.blazor.Handlers
     {
         private readonly HttpClient _apiHttp;
         private readonly CookieAuthenticationStateProvider _authStateProvider;
-
-        public FeedHandler(IHttpClientFactory httpClientFactory, CookieAuthenticationStateProvider authStateProvider)
+        private readonly NavigationManager _navigation;
+        public FeedHandler(IHttpClientFactory httpClientFactory, CookieAuthenticationStateProvider authStateProvider, NavigationManager navigationManager)
         {
+            _navigation = navigationManager;
             _authStateProvider = authStateProvider;
             _apiHttp = httpClientFactory.CreateClient("API");
             var jwtToken = _authStateProvider.GetJwtToken();
@@ -44,20 +46,31 @@ namespace app.blazor.Handlers
 
             }
         }
-
         public async Task<Response<List<PostDto>>> GetPostsAsync()
         { 
             var response = await _apiHttp.GetAsync("v1/feed/getposts");
-            if (response != null && response.IsSuccessStatusCode)
+            if (response != null)
             {
-                var dataResponse = await response.Content.ReadFromJsonAsync<Response<List<PostDto>>>();
-                if (dataResponse != null)
+                if (response.IsSuccessStatusCode)
                 {
-                    return dataResponse;
+                    var dataResponse = await response.Content.ReadFromJsonAsync<Response<List<PostDto>>>();
+                    if (dataResponse != null)
+                    {
+                        return dataResponse;
+                    }
+                    else
+                    {
+                        return Response<List<PostDto>>.CreateError("Erro ao processar resposta do servidor");
+                    }
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _navigation.NavigateTo("/user/logout", true);
+                    return Response<List<PostDto>>.CreateError("Usuário não autorizado", status: OperationStatus.Unauthorized);
                 }
                 else
                 {
-                    return Response<List<PostDto>>.CreateError("Erro ao processar resposta do servidor");
+                    return Response<List<PostDto>>.CreateError("Erro de conexão com o servidor");
                 }
             }
             else
