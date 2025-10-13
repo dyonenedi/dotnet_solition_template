@@ -7,21 +7,10 @@
     <MudPaper Elevation="2" Class="pa-4">
         <MudText Typo="Typo.h5" Class="mb-4">Configuração de Usuário</MudText>
         <MudForm @ref="form">
-            <MudTextField Label="Nome Completo" @bind-Value="UserSettings.FullName" Variant="Variant.Text" Class="mb-3" />
-            <MudTextField Label="Nome de Usuário" @bind-Value="UserSettings.Username" Variant="Variant.Text" Class="mb-3" />
-            <MudTextField Label="Email" @bind-Value="UserSettings.Email" Variant="Variant.Text" Class="mb-3" />
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@isLoading" OnClick="@SaveUserSettings">
-                @if (isLoading)
-                {
-                    <MudProgressCircular Indeterminate Size="Size.Small" Class="mr-2" />
-                    <span>Salvando...</span>
-                }
-                else
-                {
-                    <span>Salvar</span>
-                }
-            </MudButton>
-            <MudButton Color="Color.Secondary" Variant="Variant.Filled" Href="/feed" Class="mt-4">Cancelar</MudButton>
+            <MudTextField Label="Nome de Usuário" @bind-Value="UserSettings.Username" Variant="Variant.Text" Class="mb-3" Style="@($"color:{Colors.BlueGray.Lighten4}")" Disabled="true"/>
+            <MudTextField Label="Nome Completo" @bind-Value="UserSettings.FullName" Variant="Variant.Text" Class="mb-3" Style="@($"color:{Colors.BlueGray.Lighten4}")" Disabled="true"/>
+            <MudTextField Label="Email" @bind-Value="UserSettings.Email" Variant="Variant.Text" Class="mb-3" Style="@($"color:{Colors.BlueGray.Lighten4}")" Disabled="true"/>
+            <MudButton Color="Color.Secondary" Variant="Variant.Filled" Href="/feed" Class="mt-4">Voltar</MudButton>
         </MudForm>
     </MudPaper>
 </MudContainer>

@@ -100,7 +100,11 @@ namespace app.api.Application.Endpoints
             #endregion
             
             #region Get Liked Post
-            feedEndpoint.MapPost("getpostliked", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
+            feedEndpoint.MapPost("getpostliked", async (
+                HttpContext httpContext,
+                PostDto dto,
+                FeedService feedService,
+                IConfiguration config) =>
             {
                 var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 var jwtSecret = config["Secret"] ?? string.Empty;
@@ -108,6 +112,7 @@ namespace app.api.Application.Endpoints
                 {
                     return Results.BadRequest("Dados inválidos");
                 }
+                
                 var response = await feedService.GetPostLikeAsync(dto, jwtToken, jwtSecret);
                 return response.Status switch
                 {

@@ -2,15 +2,20 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using app.auth.Application.Services;
+
 namespace app.auth.Application.Utils;
 public interface IJwtTokenService
 {
     string CreateToken(string userId, string email, IEnumerable<string> roles);
+    Task<ClaimsPrincipal?> ValidateToken(string token, string secret);
 }
 
 public class JwtTokenService : IJwtTokenService
 {
     private readonly IConfiguration _configuration;
+    private static ErrorLogService _errorLogService = new ErrorLogService(null!);
+    
     public JwtTokenService(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -42,5 +47,30 @@ public class JwtTokenService : IJwtTokenService
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public async Task<ClaimsPrincipal?> ValidateToken(string token, string secret)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(secret);
+        var parameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+        try
+        {
+            var principal = tokenHandler.ValidateToken(token, parameters, out SecurityToken validatedToken);
+            return principal;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Token inválido");
+            await _errorLogService.LogErrorAsync(0, nameof(ValidateToken), ex);
+            return null;
+        }
     }
 }

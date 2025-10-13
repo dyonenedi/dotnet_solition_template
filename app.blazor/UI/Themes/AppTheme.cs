@@ -20,6 +20,7 @@ public static class AppTheme
             DrawerIcon = Colors.Shades.White,
             TextPrimary = Colors.Shades.White,
             TextSecondary = Colors.Gray.Darken3,
+            TextDisabled = Colors.BlueGray.Lighten4,
 
             Success = Colors.Green.Default,
             Error = Colors.Red.Default,
@@ -40,6 +41,7 @@ public static class AppTheme
             DrawerIcon = Colors.Shades.White,
             TextPrimary = Colors.Gray.Darken4,
             TextSecondary = Colors.Gray.Darken3,
+            TextDisabled = Colors.BlueGray.Lighten4,
 
             Success = Colors.Green.Default,
             Error = Colors.Red.Default,
