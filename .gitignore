@@ -418,9 +418,9 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 
 # Custom: Configuration files with connection strings and sensitive data
-appsettings.json
-appsettings.*.json
-!appsettings.Development.template.json
+# appsettings.json // Commneted to allow geting exemplo on github
+# appsettings.*.json // Commneted to allow geting exemplo on github
+# !appsettings.Development.template.json // Commneted to allow geting exemplo on github
 
 # Custom: Database files
 *.db

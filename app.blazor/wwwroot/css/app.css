@@ -55,3 +55,12 @@ input:-webkit-autofill:active {
     -webkit-text-fill-color: #fff !important; /* cor do texto */
     transition: background-color 5000s ease-in-out 0s;
 }
+
+.placeholder-custom .mud-input-label {
+    color: #ccc !important;
+}
+
+input:disabled,
+textarea:disabled {
+    opacity: 0.5!important;
+}
