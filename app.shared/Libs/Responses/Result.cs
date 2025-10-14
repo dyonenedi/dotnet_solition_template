@@ -11,4 +11,4 @@ public class Result<T>
     new() { Success = true, Data = data, Message = message, Status = OperationStatus.Success };
     public static Result<T> Fail(string message, OperationStatus status = OperationStatus.Error, T? data = default) =>
     new() { Success = false, Message = message, Status = status, Data = data };
-    }
+}

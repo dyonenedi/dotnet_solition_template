@@ -38,8 +38,6 @@ namespace app.blazor.UI.Pages.User
 
         private async Task SaveUserSettings()
         {
-            // Simulação de chamada de API
-            await Task.Delay(1000);
             Snackbar.Add("Configurações salvas com sucesso!", Severity.Success);
         }
     }

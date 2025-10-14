@@ -1,17 +1,42 @@
 using app.api.Application.Services;
 using app.shared.Libs.DTOs.Feed;
 using app.shared.Libs.Responses;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace app.api.Application.Endpoints
 {
     public static class FeedEndpoint
     {
-        // Método auxiliar para validar e extrair JWT
-        private static bool TryGetJwt(HttpContext httpContext, IConfiguration config, out string jwtToken, out string jwtSecret)
+        // Método auxiliar para validar e extrair ID do claim do JWT
+        private static async Task<IResult> TryGetUserIdFromJwt(HttpContext httpContext, IConfiguration config, ErrorLogService _errorLogService )
         {
-            jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            jwtSecret = config["Secret"] ?? string.Empty;
-            return !string.IsNullOrEmpty(jwtToken) && !string.IsNullOrEmpty(jwtSecret);
+            var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var jwtSecret = config["Secret"] ?? string.Empty;
+            if (string.IsNullOrEmpty(jwtToken) || string.IsNullOrEmpty(jwtSecret))
+            {
+                Console.WriteLine($"Breack 1");
+                await _errorLogService.LogErrorAsync(0, "TryGetUserIdFromJwt", new Exception("Token JWT ou segredo JWT ausente"));
+                return Results.BadRequest();
+            }
+            
+            var principal = await Utils.JwtUtils.ValidateToken(jwtToken, jwtSecret);
+            if (principal == null)
+            {
+                Console.WriteLine($"Breack 2");
+                await _errorLogService.LogErrorAsync(0, "TryGetUserIdFromJwt", new Exception("Token JWT inválido"));
+                return Results.Unauthorized();
+            }
+            
+             var userIdStr = Utils.JwtUtils.GetUserId(principal);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                Console.WriteLine($"Breack 3");
+                await _errorLogService.LogErrorAsync(0, "TryGetUserIdFromJwt", new Exception("ID do usuário inválido no token JWT"));
+                return Results.Conflict();
+            }
+
+            Console.WriteLine($"Breack 4 - UserId: {userId}");
+            return Results.Ok(userId);
         }
         public static void MapFeedEndpoints(this WebApplication app)
         {
@@ -20,13 +45,16 @@ namespace app.api.Application.Endpoints
                 .WithDescription("Feed management endpoints");
 
             #region Post Post
-            feedEndpoint.MapPost("post", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
+            feedEndpoint.MapPost("post",
+            async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config, ErrorLogService _errorLogService) =>
             {
-                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
-                {
+                // GET ID from JWT Token and set to dto.UserId
+                var jwtResult = await TryGetUserIdFromJwt(httpContext, config, _errorLogService);
+                if (jwtResult == null || jwtResult is not IResult okResult || okResult is not Ok<int> ok)
                     return Results.Unauthorized();
-                }
-                var result = await feedService.PostAsync(dto, jwtToken, jwtSecret);
+                dto.UserId = ok.Value;
+
+                var result = await feedService.PostAsync(dto);
                 return result.Status switch
                 {
                     OperationStatus.Success => Results.Ok(result),
@@ -47,13 +75,18 @@ namespace app.api.Application.Endpoints
             #endregion
 
             #region Get Post
-            feedEndpoint.MapGet("getposts", async (HttpContext httpContext, FeedService feedService, IConfiguration config, ErrorLogService errorLogService) =>
+            feedEndpoint.MapGet("getposts",
+            async (HttpContext httpContext, FeedService feedService, IConfiguration config, ErrorLogService errorLogService, ErrorLogService _errorLogService) =>
             {
-                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
-                {
+                // GET ID from JWT Token and set to dto.UserId
+                var jwtResult = await TryGetUserIdFromJwt(httpContext, config, _errorLogService);
+                Console.WriteLine($"Breack 5 - UserId: {jwtResult}");
+                if (jwtResult == null || !(jwtResult is IResult okResult) || !(okResult is Ok<int> ok))
                     return Results.Unauthorized();
-                }
-                var result = await feedService.GetPostsAsync(jwtToken, jwtSecret);
+
+                Console.WriteLine($"Breack 6 - UserId: {ok.Value}");
+                var userId = ok.Value;
+                var result = await feedService.GetPostsAsync(userId);
                 return result.Status switch
                 {
                     OperationStatus.Success => Results.Ok(result),
@@ -73,13 +106,16 @@ namespace app.api.Application.Endpoints
             #endregion
 
             #region Like Post
-            feedEndpoint.MapPost("likepost", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
+            feedEndpoint.MapPost("likepost",
+            async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config, ErrorLogService _errorLogService) =>
             {
-                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
-                {
+                // GET ID from JWT Token and set to dto.UserId
+                var jwtResult = await TryGetUserIdFromJwt(httpContext, config, _errorLogService);
+                if (jwtResult == null || jwtResult is not IResult okResult || okResult is not Ok<int> ok)
                     return Results.Unauthorized();
-                }
-                var result = await feedService.LikePostAsync(dto, jwtToken, jwtSecret);
+                dto.UserId = ok.Value;
+
+                var result = await feedService.LikePostAsync(dto);
                 return result.Status switch
                 {
                     OperationStatus.Success => Results.Ok(result),
@@ -100,13 +136,16 @@ namespace app.api.Application.Endpoints
             #endregion
 
             #region Get Posts
-            feedEndpoint.MapPost("getpostliked", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
+            feedEndpoint.MapPost("getpostliked",
+            async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config, ErrorLogService _errorLogService) =>
             {
-                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
-                {
+                // GET ID from JWT Token and set to dto.UserId
+                var jwtResult = await TryGetUserIdFromJwt(httpContext, config, _errorLogService);
+                if (jwtResult == null || jwtResult is not IResult okResult || okResult is not Ok<int> ok)
                     return Results.Unauthorized();
-                }
-                var result = await feedService.GetPostLikeAsync(dto, jwtToken, jwtSecret);
+                dto.UserId = ok.Value;
+
+                var result = await feedService.GetPostLikeAsync(dto);
                 return result.Status switch
                 {
                     OperationStatus.Success => Results.Ok(result),

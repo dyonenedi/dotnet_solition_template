@@ -36,6 +36,19 @@
                 "${workspaceFolder}/bglandia.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-app.api",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/app.api/app.api.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "group": "build",
+            "problemMatcher": "$msCompile"
         }
     ]
 }

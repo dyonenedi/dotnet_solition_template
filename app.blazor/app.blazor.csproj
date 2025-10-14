@@ -20,4 +20,16 @@
     <BaseOutputPath>bin\</BaseOutputPath>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!-- <ItemGroup>
+    <Reference Include="app.shared">
+      <HintPath>..\app.shared\bin\Debug\net9.0\app.shared.dll</HintPath>
+      <Private>true</Private>
+      <CopyLocal>true</CopyLocal>
+    </Reference>
+  </ItemGroup> -->
+
 </Project>

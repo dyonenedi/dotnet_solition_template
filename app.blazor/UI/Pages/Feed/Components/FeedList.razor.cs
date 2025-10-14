@@ -17,7 +17,7 @@ namespace app.blazor.UI.Pages.Feed.Components
             if (Post == null || Post.Id <= 0)
                 return;
             
-            var dto = new PostDto { Id = (int)Post.Id };
+            var dto = new PostDto { Id = Post.Id };
             var response = await FeedHandler.getLiked(dto);
             if (response == null || !response.Success)
             {
@@ -32,7 +32,7 @@ namespace app.blazor.UI.Pages.Feed.Components
             if (Post != null && Post.Id > 0)
             {
                 isLiked = !isLiked;
-                var dto = new PostDto { Id = (int)Post.Id };
+                var dto = new PostDto { Id = Post.Id };
                 var response = await FeedHandler.LikePost(dto);
                 if (response == null || !response.Success)
                 {

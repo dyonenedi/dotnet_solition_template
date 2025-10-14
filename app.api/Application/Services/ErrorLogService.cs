@@ -27,10 +27,9 @@ public class ErrorLogService
             _db.ErrorLogs.Add(errorLog);
             await _db.SaveChangesAsync();
         }
-        catch 
+        catch (Exception e)
         {
-            // Evitar loops infinitos de logging
-            // Opcional: log em arquivo ou EventLog do Windows
+            Console.WriteLine($"Failed to log error to database: {e.Message}\n{e.StackTrace}");
         }
     }
 }

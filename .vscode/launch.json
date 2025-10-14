@@ -8,7 +8,7 @@
             "name": ".NET Core Launch (web)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "build-app.api",
             "program": "${workspaceFolder}/app.api/bin/Debug/api/net9.0/app.api.dll",
             "args": [],
             "cwd": "${workspaceFolder}/app.api",
@@ -25,7 +25,7 @@
             }
         },
         {
-            "name": ".NET Core Attach",
+            "name": "API",
             "type": "coreclr",
             "request": "attach"
         }

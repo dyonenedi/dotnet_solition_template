@@ -3,6 +3,7 @@ using app.auth.Application.DB;
 using app.auth.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 using app.auth.Application.Utils;
+using Microsoft.OpenApi.Models;
 
 namespace app.auth.Extentions
 {
@@ -13,7 +14,35 @@ namespace app.auth.Extentions
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             // builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Minimal API", Version = "v1" });
+
+                // Configura o esquema de segurança para o Bearer Token
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Insira o token JWT no formato 'Bearer {token}'",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
         }
         public static void AddServices(this WebApplicationBuilder builder)
         {

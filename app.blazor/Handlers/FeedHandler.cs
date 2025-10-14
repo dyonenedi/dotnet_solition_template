@@ -24,7 +24,7 @@ namespace app.blazor.Handlers
             var response = await _apiHttp.PostAsJsonAsync("v1/feed/post", dto);
             if (response == null)
                 return Result<PostDto>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
-            
+
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 _navigation.NavigateTo("/user/logout", true);
@@ -33,7 +33,7 @@ namespace app.blazor.Handlers
 
             if (!response.IsSuccessStatusCode)
                 return Result<PostDto>.Fail("Erro na requisição", OperationStatus.Error);
-            
+
             try
             {
                 var result = await response.Content.ReadFromJsonAsync<Result<PostDto>>();
@@ -42,31 +42,6 @@ namespace app.blazor.Handlers
             catch (Exception ex)
             {
                 return Result<PostDto>.Fail(ex.Message, OperationStatus.Error);
-            }
-        }
-        public async Task<Result<List<PostDto>>> GetPostsAsync()
-        {
-            var response = await _apiHttp.GetAsync("v1/feed/getposts");
-            if (response == null)
-                return Result<List<PostDto>>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
-            
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                _navigation.NavigateTo("/user/logout", true);
-                return Result<List<PostDto>>.Fail("Usuário não autorizado", OperationStatus.Unauthorized);
-            }
-
-            if (!response.IsSuccessStatusCode)
-                return Result<List<PostDto>>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
-
-            try
-            {
-                var result = await response.Content.ReadFromJsonAsync<Result<List<PostDto>>>();
-                return result ?? Result<List<PostDto>>.Fail("Resposta vazia ou inválida", OperationStatus.Error);
-            }
-            catch (Exception ex)
-            {
-                return Result<List<PostDto>>.Fail(ex.Message, OperationStatus.Error);
             }
         }
         public async Task<Result<string>> LikePost(PostDto dto)
@@ -94,6 +69,31 @@ namespace app.blazor.Handlers
                 return Result<string>.Fail(ex.Message, OperationStatus.Error);
             }
         }
+        public async Task<Result<List<PostDto>>> GetPostsAsync()
+        {
+            var response = await _apiHttp.GetAsync("v1/feed/getposts");
+            if (response == null)
+                return Result<List<PostDto>>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _navigation.NavigateTo("/user/logout", true);
+                return Result<List<PostDto>>.Fail("Usuário não autorizado", OperationStatus.Unauthorized);
+            }
+
+            if (!response.IsSuccessStatusCode)
+                return Result<List<PostDto>>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
+
+            try
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<List<PostDto>>>();
+                return result ?? Result<List<PostDto>>.Fail("Resposta vazia ou inválida", OperationStatus.Error);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<PostDto>>.Fail(ex.Message, OperationStatus.Error);
+            }
+        }
         public async Task<Result<bool>> getLiked(PostDto dto)
         {
             var response = await _apiHttp.PostAsJsonAsync($"v1/feed/getpostliked/", dto);
@@ -111,6 +111,7 @@ namespace app.blazor.Handlers
 
             try
             {
+                var json = await response.Content.ReadAsStringAsync();
                 var result = await response.Content.ReadFromJsonAsync<Result<bool>>();
                 return result ?? Result<bool>.Fail("Resposta vazia ou inválida");
             }

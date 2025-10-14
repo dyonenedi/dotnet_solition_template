@@ -30,7 +30,6 @@ public partial class Register
                 message = "Cadastro realizado com sucesso!";
                 messageType = Severity.Success;
                 model = new();
-                await Task.Delay(2000);
                 navigationManager.NavigateTo("/user/login");
             }
             else

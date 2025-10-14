@@ -22,7 +22,6 @@ public class AuthCookieController : ControllerBase
             SameSite = SameSiteMode.None,
             Expires = DateTimeOffset.UtcNow.AddMinutes(60) // Expira em 60 minutos
         });
-
         return Redirect("/auth/callback");
     }
     
