@@ -19,140 +19,104 @@ namespace app.blazor.Handlers
                 return;
             _apiHttp.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
         }
-        public async Task<SimpleResponse> PostAsync(string text)
+        public async Task<Result<PostDto>> PostAsync(PostDto dto)
         {
-            var dto = new PostDto
-            {
-                Text = text
-            };
-
-            
             var response = await _apiHttp.PostAsJsonAsync("v1/feed/post", dto);
-            if (response != null && response.IsSuccessStatusCode)
+            if (response == null)
+                return Result<PostDto>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                var dataResponse = await response.Content.ReadFromJsonAsync<SimpleResponse>();
-                if (dataResponse != null)
-                {
-                    return dataResponse;
-                }
-                else
-                {
-                    return SimpleResponse.CreateError("Erro ao processar resposta do servidor");
-                }
+                _navigation.NavigateTo("/user/logout", true);
+                return Result<PostDto>.Fail("Usuário não autorizado", OperationStatus.Unauthorized);
             }
-            else
-            {
-                return SimpleResponse.CreateError("Erro de conexão com o servidor");
 
+            if (!response.IsSuccessStatusCode)
+                return Result<PostDto>.Fail("Erro na requisição", OperationStatus.Error);
+            
+            try
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<PostDto>>();
+                return result ?? Result<PostDto>.Fail("Resposta vazia ou inválida", OperationStatus.Error);
+            }
+            catch (Exception ex)
+            {
+                return Result<PostDto>.Fail(ex.Message, OperationStatus.Error);
             }
         }
-        public async Task<Response<List<PostDto>>> GetPostsAsync()
+        public async Task<Result<List<PostDto>>> GetPostsAsync()
         {
             var response = await _apiHttp.GetAsync("v1/feed/getposts");
-            if (response != null)
+            if (response == null)
+                return Result<List<PostDto>>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                if (response.IsSuccessStatusCode)
-                {
-                    var dataResponse = await response.Content.ReadFromJsonAsync<Response<List<PostDto>>>();
-                    if (dataResponse != null)
-                    {
-                        return dataResponse;
-                    }
-                    else
-                    {
-                        return Response<List<PostDto>>.CreateError("Erro ao processar resposta do servidor");
-                    }
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    _navigation.NavigateTo("/user/logout", true);
-                    return Response<List<PostDto>>.CreateError("Usuário não autorizado", status: OperationStatus.Unauthorized);
-                }
-                else
-                {
-                    return Response<List<PostDto>>.CreateError("Erro de conexão com o servidor");
-                }
+                _navigation.NavigateTo("/user/logout", true);
+                return Result<List<PostDto>>.Fail("Usuário não autorizado", OperationStatus.Unauthorized);
             }
-            else
-            {
-                return Response<List<PostDto>>.CreateError("Erro de conexão com o servidor");
 
+            if (!response.IsSuccessStatusCode)
+                return Result<List<PostDto>>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
+
+            try
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<List<PostDto>>>();
+                return result ?? Result<List<PostDto>>.Fail("Resposta vazia ou inválida", OperationStatus.Error);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<PostDto>>.Fail(ex.Message, OperationStatus.Error);
             }
         }
-        public async Task<SimpleResponse> LikePost(int? postId)
+        public async Task<Result<string>> LikePost(PostDto dto)
         {
-            if (postId == null || postId <= 0)
-                return SimpleResponse.CreateError("Id inválido");
-            var dto = new PostDto
-            {
-                Id = postId
-            };
             var response = await _apiHttp.PostAsJsonAsync("v1/feed/likepost", dto);
-            if (response != null)
+            if (response == null)
+                return Result<string>.Fail("Erro de conexão com o servidor", OperationStatus.Error);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                if (response.IsSuccessStatusCode)
-                {
-                    var dataResponse = await response.Content.ReadFromJsonAsync<SimpleResponse>();
-                    if (dataResponse != null)
-                    {
-                        return dataResponse;
-                    }
-                    else
-                    {
-                        return SimpleResponse.CreateError("Erro ao processar resposta do servidor");
-                    }
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    _navigation.NavigateTo("/user/logout", true);
-                    return SimpleResponse.CreateError("Usuário não autorizado", OperationStatus.Unauthorized);
-                }
-                else
-                {
-                    return SimpleResponse.CreateError(response.ReasonPhrase ?? "Erro de conexão de servidor");
-                }
+                _navigation.NavigateTo("/user/logout", true);
+                return Result<string>.Fail("Usuário não autorizado", OperationStatus.Unauthorized);
             }
-            else
-            {
-                return SimpleResponse.CreateError("Erro de conexão com o servidor");
 
+            if (!response.IsSuccessStatusCode)
+                return Result<string>.Fail("Erro na requisição", OperationStatus.Error);
+
+            try
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<string>>();
+                return result ?? Result<string>.Fail("Resposta vazia ou inválida", OperationStatus.Error);
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Fail(ex.Message, OperationStatus.Error);
             }
         }
-        public async Task<Response<PostLikeDto>> getLiked(int postId)
+        public async Task<Result<bool>> getLiked(PostDto dto)
         {
-            var dto = new PostDto
-            {
-                Id = postId
-            };
             var response = await _apiHttp.PostAsJsonAsync($"v1/feed/getpostliked/", dto);
-            if (response != null)
+            if (response == null)
+                return Result<bool>.Fail("Erro de conexão com o servidor");
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                if (response.IsSuccessStatusCode)
-                {
-                    var dataResponse = await response.Content.ReadFromJsonAsync<Response<PostLikeDto>>();
-                    if (dataResponse != null)
-                    {
-                        return dataResponse;
-                    }
-                    else
-                    {
-                        return Response<PostLikeDto>.CreateError("Erro ao processar resposta do servidor");
-                    }
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    _navigation.NavigateTo("/user/logout", true);
-                    return Response<PostLikeDto>.CreateError("Usuário não autorizado", new PostLikeDto(), OperationStatus.Unauthorized);
-                }
-                else
-                {
-                    return Response<PostLikeDto>.CreateError("Erro de conexão com o servidor", new PostLikeDto());
-                }
+                _navigation.NavigateTo("/user/logout", true);
+                return Result<bool>.Fail("Usuário não autorizado", OperationStatus.Unauthorized);
             }
-            else
-            {
-                return Response<PostLikeDto>.CreateError("Erro de conexão com o servidor", new PostLikeDto());
 
+            if (!response.IsSuccessStatusCode)
+                return Result<bool>.Fail("Erro na requisição");
+
+            try
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<bool>>();
+                return result ?? Result<bool>.Fail("Resposta vazia ou inválida");
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Fail(ex.Message);
             }
         }
     }

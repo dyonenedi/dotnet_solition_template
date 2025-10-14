@@ -14,23 +14,26 @@ namespace app.blazor.UI.Pages.Feed.Components
 
         protected override async Task OnInitializedAsync()
         {
-            if (Post == null || Post.Id == null || Post.Id <= 0)
+            if (Post == null || Post.Id <= 0)
                 return;
-            var response = await FeedHandler.getLiked((int)Post.Id);
-            if (response == null || !response.Success || response.Data == null || response.Data.PostId != Post.Id)
+            
+            var dto = new PostDto { Id = (int)Post.Id };
+            var response = await FeedHandler.getLiked(dto);
+            if (response == null || !response.Success)
             {
                 Snackbar.Add(response?.Message ?? "Erro ao pegar likes do post", Severity.Error);
             } else
             {
-                isLiked = response.Data.IsLiked;
+                isLiked = response.Data;
             }
         }
         public async Task LikePost()
         {
-            if (Post != null && Post.Id != null && Post.Id > 0)
+            if (Post != null && Post.Id > 0)
             {
                 isLiked = !isLiked;
-                var response = await FeedHandler.LikePost(Post.Id);
+                var dto = new PostDto { Id = (int)Post.Id };
+                var response = await FeedHandler.LikePost(dto);
                 if (response == null || !response.Success)
                 {
                     isLiked = !isLiked;

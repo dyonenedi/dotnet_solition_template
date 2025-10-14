@@ -6,6 +6,13 @@ namespace app.api.Application.Endpoints
 {
     public static class FeedEndpoint
     {
+        // Método auxiliar para validar e extrair JWT
+        private static bool TryGetJwt(HttpContext httpContext, IConfiguration config, out string jwtToken, out string jwtSecret)
+        {
+            jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            jwtSecret = config["Secret"] ?? string.Empty;
+            return !string.IsNullOrEmpty(jwtToken) && !string.IsNullOrEmpty(jwtSecret);
+        }
         public static void MapFeedEndpoints(this WebApplication app)
         {
             var feedEndpoint = app.MapGroup("v1/feed")
@@ -15,121 +22,107 @@ namespace app.api.Application.Endpoints
             #region Post Post
             feedEndpoint.MapPost("post", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
             {
-                var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var jwtSecret = config["Secret"] ?? string.Empty;
-                var response = await feedService.PostAsync(dto, jwtToken, jwtSecret);
-                return response.Status switch
+                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
                 {
-                    OperationStatus.Success => Results.Ok(response),
+                    return Results.Unauthorized();
+                }
+                var result = await feedService.PostAsync(dto, jwtToken, jwtSecret);
+                return result.Status switch
+                {
+                    OperationStatus.Success => Results.Ok(result),
                     OperationStatus.Unauthorized => Results.Unauthorized(),
-                    OperationStatus.ValidationError => Results.BadRequest(response),
-                    OperationStatus.Conflict => Results.Conflict(response),
-                    _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
+                    OperationStatus.ValidationError => Results.BadRequest(result),
+                    OperationStatus.Conflict => Results.Conflict(result),
+                    _ => Results.Problem(detail: result.Message, statusCode: 500)
                 };
             })
             .WithName("RegisterPost")
             .WithSummary("Register a new post")
             .WithDescription("Creates a new post with the provided information")
-            .Produces<SimpleResponse>(201, "application/json")  // Created
-            .Produces<SimpleResponse>(401, "application/json")  // Unauthorized
-            .Produces<SimpleResponse>(400, "application/json")  // Bad Request (validação)
-            .Produces<SimpleResponse>(409, "application/json")  // Conflict (já existe)
+            .Produces<Result<PostDto>>(201, "application/json")  // Created
+            .Produces<Result<PostDto>>(401, "application/json")  // Unauthorized
+            .Produces<Result<PostDto>>(400, "application/json")  // Bad Request (validação)
+            .Produces<Result<PostDto>>(409, "application/json")  // Conflict (já existe)
             .ProducesProblem(500);
             #endregion
 
             #region Get Post
             feedEndpoint.MapGet("getposts", async (HttpContext httpContext, FeedService feedService, IConfiguration config, ErrorLogService errorLogService) =>
             {
-                try
+                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
                 {
-                    var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                    var jwtSecret = config["Secret"];
-                    if (string.IsNullOrEmpty(jwtToken) || string.IsNullOrEmpty(jwtSecret))
-                    {
-                        return Results.Unauthorized();
-                    }
-                    var response = await feedService.GetPostsAsync(jwtToken, jwtSecret);
-                    return response.Status switch
-                    {
-                        OperationStatus.Success => Results.Ok(response),
-                        OperationStatus.ValidationError => Results.BadRequest(response),
-                        OperationStatus.Unauthorized => Results.Unauthorized(),
-                        OperationStatus.Conflict => Results.Conflict(response),
-                        _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
-                    };
+                    return Results.Unauthorized();
                 }
-                catch (Exception ex)
+                var result = await feedService.GetPostsAsync(jwtToken, jwtSecret);
+                return result.Status switch
                 {
-                    // Log de erro específico do endpoint
-                    await errorLogService.LogErrorAsync(0, nameof(FeedEndpoint), ex);
-                    return Results.Problem(detail: "Erro interno do servidor", statusCode: 500, title: "Erro interno do servidor");
-                }
+                    OperationStatus.Success => Results.Ok(result),
+                    OperationStatus.ValidationError => Results.BadRequest(result),
+                    OperationStatus.Unauthorized => Results.Unauthorized(),
+                    OperationStatus.Conflict => Results.Conflict(result),
+                    _ => Results.Problem(detail: result.Message, statusCode: 500, title: "Erro interno do servidor")
+                };
             }).WithName("Get Posts")
             .WithSummary("Obter posts do feed")
             .WithDescription("Obtém todos os posts do feed do usuário")
-            .Produces<Response<List<PostDto>>>(200, "application/json")  // OK
-            .Produces<Response<List<PostDto>>>(401, "application/json")  // Unauthorized
-            .Produces<Response<List<PostDto>>>(400, "application/json")  // Bad Request (validação)
-            .Produces<Response<List<PostDto>>>(409, "application/json")  // Conflict (já existe)
+            .Produces<Result<List<PostDto>>>(200, "application/json")  // OK
+            .Produces<Result<List<PostDto>>>(401, "application/json")  // Unauthorized
+            .Produces<Result<List<PostDto>>>(400, "application/json")  // Bad Request (validação)
+            .Produces<Result<List<PostDto>>>(409, "application/json")  // Conflict (já existe)
             .ProducesProblem(500);
             #endregion
 
             #region Like Post
             feedEndpoint.MapPost("likepost", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
             {
-                var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var jwtSecret = config["Secret"] ?? string.Empty;
-                var response = await feedService.LikePostAsync(dto, jwtToken, jwtSecret);
-                return response.Status switch
+                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
                 {
-                    OperationStatus.Success => Results.Ok(response),
-                    OperationStatus.Unauthorized => Results.Unauthorized(),
-                    OperationStatus.ValidationError => Results.BadRequest(response),
-                    OperationStatus.Conflict => Results.Conflict(response),
-                    _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
-                };
-            })
-            .WithName("likePost")
-            .WithSummary("Like a post")
-            .WithDescription("Like a post with the provided information")
-            .Produces<SimpleResponse>(201, "application/json")  // Created
-            .Produces<SimpleResponse>(401, "application/json")  // Unauthorized
-            .Produces<SimpleResponse>(400, "application/json")  // Bad Request (validação)
-            .Produces<SimpleResponse>(409, "application/json")  // Conflict (já existe)
-            .ProducesProblem(500);
-            #endregion
-            
-            #region Get Liked Post
-            feedEndpoint.MapPost("getpostliked", async (
-                HttpContext httpContext,
-                PostDto dto,
-                FeedService feedService,
-                IConfiguration config) =>
-            {
-                var jwtToken = httpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var jwtSecret = config["Secret"] ?? string.Empty;
-                if (dto == null || dto.Id <= 0 || dto.UserId <= 0)
-                {
-                    return Results.BadRequest("Dados inválidos");
+                    return Results.Unauthorized();
                 }
-                
-                var response = await feedService.GetPostLikeAsync(dto, jwtToken, jwtSecret);
-                return response.Status switch
+                var result = await feedService.LikePostAsync(dto, jwtToken, jwtSecret);
+                return result.Status switch
                 {
-                    OperationStatus.Success => Results.Ok(response),
+                    OperationStatus.Success => Results.Ok(result),
                     OperationStatus.Unauthorized => Results.Unauthorized(),
-                    OperationStatus.ValidationError => Results.BadRequest(response),
-                    OperationStatus.Conflict => Results.Conflict(response),
-                    _ => Results.Problem(detail: response.Message, statusCode: 500, title: "Erro interno do servidor")
+                    OperationStatus.ValidationError => Results.BadRequest(result),
+                    OperationStatus.Conflict => Results.Conflict(result),
+                    _ => Results.Problem(detail: result.Message, statusCode: 500, title: "Erro interno do servidor")
                 };
             })
-            .WithName("getPostLike")
+            .WithName("likepost")
             .WithSummary("Get like status of a post")
             .WithDescription("Get like status of a post with the provided information")
-            .Produces<Response<PostLikeDto>>(200, "application/json")  // OK
-            .Produces<Response<PostLikeDto>>(401, "application/json")  // Unauthorized
-            .Produces<Response<PostLikeDto>>(400, "application/json")  // Bad Request (validação)
-            .Produces<Response<PostLikeDto>>(409, "application/json")  // Conflict (já existe)
+            .Produces<Result<string>>(200, "application/json")  // OK
+            .Produces<Result<string>>(401, "application/json")  // Unauthorized
+            .Produces<Result<string>>(400, "application/json")  // Bad Request (validação)
+            .Produces<Result<string>>(409, "application/json")  // Conflict (já existe)
+            .ProducesProblem(500);
+            #endregion
+
+            #region Get Posts
+            feedEndpoint.MapPost("getpostliked", async (HttpContext httpContext, PostDto dto, FeedService feedService, IConfiguration config) =>
+            {
+                if (!TryGetJwt(httpContext, config, out var jwtToken, out var jwtSecret))
+                {
+                    return Results.Unauthorized();
+                }
+                var result = await feedService.GetPostLikeAsync(dto, jwtToken, jwtSecret);
+                return result.Status switch
+                {
+                    OperationStatus.Success => Results.Ok(result),
+                    OperationStatus.Unauthorized => Results.Unauthorized(),
+                    OperationStatus.ValidationError => Results.BadRequest(result),
+                    OperationStatus.Conflict => Results.Conflict(result),
+                    _ => Results.Problem(detail: result.Message, statusCode: 500, title: "Erro interno do servidor")
+                };
+            })
+            .WithName("getLikedPost")
+            .WithSummary("Get Liked Post")
+            .WithDescription("Get Liked Post with the provided information")
+            .Produces<Result<bool>>(200, "application/json")  // OK
+            .Produces<Result<bool>>(401, "application/json")  // Unauthorized
+            .Produces<Result<bool>>(400, "application/json")  // Bad Request (validação)
+            .Produces<Result<bool>>(409, "application/json")  // Conflict (já existe)
             .ProducesProblem(500);
             #endregion
         }

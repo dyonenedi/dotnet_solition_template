@@ -46,12 +46,16 @@ namespace app.blazor.UI.Pages.Feed
             }
         }
 
-        private async Task Submit()
+        private async Task PostSubmit()
         {
             isLoading = true;
             if (!string.IsNullOrEmpty(model.text) && model.text.Length >= 5 && model.text.Length <= 200)
             {
-                var response = await _FeedHandler.PostAsync(model.text);
+                var dto = new PostDto
+                {
+                    Text = model.text
+                };
+                var response = await _FeedHandler.PostAsync(dto);
                 if (response == null || !response.Success)
                 {
                     Snackbar.Add("Erro ao postar no feed. Tente novamente mais tarde.", Severity.Error);

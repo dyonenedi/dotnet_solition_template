@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IFeedRepository, FeedRepository>();
+builder.Services.AddScoped<FeedRepository>();
 
 // Configure Entity Framework
 builder.Services.AddDbContext<AppDbContext>(options =>
